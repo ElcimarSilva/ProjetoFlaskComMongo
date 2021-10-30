@@ -218,7 +218,7 @@ def create_empresa():
 #LISTAR EMPRESAS
 @app.route('/empresas', methods=['GET'])
 def get_empresas():
-    empresas = mongao.db.empresas.find()
+    empresas = mongo.db.empresas.find()
     response = json_util.dumps(empresas)
     return Response(response, mimetype='application/json')
 
