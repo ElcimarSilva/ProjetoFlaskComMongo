@@ -12,3 +12,5 @@ pip install flask-pymongo
 pip install Form
 
 para executar basta python app.py
+
+Falta deixar a virtualenv disponivel
