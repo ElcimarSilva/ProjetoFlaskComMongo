@@ -1,5 +1,5 @@
 from wtforms import Form, StringField, validators
-from wtforms.fields.html5 import EmailField
+from wtforms.fields import EmailField
 
 class form(Form):
     nome=StringField('Nome: ', [validators.length(min=2, max=10, message='Nome invalido min 2 max 10')])
