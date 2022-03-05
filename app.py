@@ -5,6 +5,8 @@ from bson import json_util
 from bson.objectid import ObjectId
 from forms import *
 from flask_wtf import CSRFProtect
+from tratamento_de_erros import not_found
+import atividades
 
 app = Flask (__name__)
 app.config['MONGO_URI']='mongodb://localhost/pythonmongodb' #Base de dados
@@ -20,8 +22,8 @@ def base():
     
 @app.route ("/painel", methods=['GET'])
 def painel():
-    #teste = 'texto da variavel na rota painel do app.py'
-    return render_template('painel.html')#, teste=teste
+    teste = 'texto da variavel na rota painel do app.py'
+    return render_template('painel.html', teste=teste)#
 
 
 #Rota formulario de teste
@@ -123,6 +125,7 @@ def create_user():
     password = request.json['password'] #
     email = request.json['email']
 
+
     if username and email and password:
         hashed_password = generate_password_hash(password)
         id = mongo.db.users.insert(
@@ -138,7 +141,7 @@ def create_user():
     else:     
         return not_found()
 
-    #print (request.json)
+    print (request.json)
     return {'mensagem': 'recebido'}
 
 #LISTAR USUARIOS
@@ -180,15 +183,6 @@ def update_user(id):
         response = jsonify({'mensagem': 'Usuario ' + id + 'foi atualizado com sucesso!'})
         return response
 
-#TRATAMENTO DE ERRO
-@app.errorhandler (404)
-def not_found(error=None):
-    response = jsonify({
-        'message': 'Recurso não encontrado!' + request.url,
-        'status': 404    
-    })
-    response.status_code = 404
-    return response
 
 ###################################################################################
 
@@ -374,43 +368,20 @@ def update_eixo(id):
         return response
 
 ###################################################################################
-#CADASTRAR ATIVIDADES
-#Toda atividade deve estar vinculada a um eixo
+
 @app.route('/atividades', methods=['POST'])
-def create_atividade():
-    #Recebendo dados
-    atividade = request.json['atividade'] # 
-    descricao = request.json['descricao']
+def cadastra_atividade ():
+    atividades.create_atividade()
 
-    if atividade and descricao :
-        id = mongo.db.atividades.insert(
-            {'atividade': atividade, 'descricao': descricao, }
-        )                            #INSERÇÃO DE ATIVIDADE
-        response = {
-            'id': str(id),
-            'atividade': atividade,
-            'descricao': descricao 
-        }
-        return response
-    else:     
-        return not_found()
-
-    #print (request.json)
-    return {'mensagem': 'recebido'}
-
-#LISTAR ATIVIDADES
 @app.route('/atividades', methods=['GET'])
-def get_atividades():
-    atividades = mongo.db.atividades.find()
-    response = json_util.dumps(atividades)
-    return Response(response, mimetype='application/json')
+def lista_atividades():
+    response = atividades.get_atividades()
+    return response
 
-#LISTAR ATIVIDADE COM ID
-@app.route('/atividades/<id>', methods=['GET'])
-def get_atividade(id):
-    atividade = mongo.db.atividades.find_one({'_id': ObjectId(id)})
-    response = json_util.dumps(atividade)
-    return Response (response, mimetype="application/json")
+@app.route('/atividade/<id>', methods=['GET'])
+def lista_atividade_id(id):
+    response = atividades.get_atividade(id)
+    return response
 
 #DELETAR ATIVIDADES
 @app.route('/atividades/<id>', methods=['DELETE'])
@@ -424,12 +395,12 @@ def detele_atividade(id):
 def update_atividade(id):
     atividade = request.json['atividade']
     descricao = request.json['descricao']
-    
+
     if atividade and descricao:
         mongo.db.atividades.update_one({'_id': ObjectId(id)}, {'$set': {
             'atividade': atividade,
             'descricao': descricao
-        
+
         }})
         response = jsonify({'mensagem': 'Atividade: ' + id + 'foi atualizada com sucesso!'})
         return response
