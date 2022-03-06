@@ -43,21 +43,7 @@ def formulario():
         return redirect ('/')
     return render_template ('formulario.html', field=field)
 
-#CADASTRO DE ATIVIDADES VIA FORM
-@app.route ("/cadAtividade", methods=['GET', 'POST'])
-def cadAtividade():
-    field=atvdd(request.form) 
 
-    if request.method == 'POST' and field.validate():
-        atividade=request.form['atividade']
-        descricao=request.form['descricao']
-        json={'atividade':atividade, 'descricao':descricao}
-        
-
-        mongo.db.atividades.insert_one(json)
-        flash('Cadastro efetuado!')
-        return redirect ('/painel')
-    return render_template ('cadAtividade.html', field=field)
 
 #CADASTRO DE EMPRESAS VIA FORM
 @app.route ("/cadEmpresa", methods=['GET', 'POST'])
@@ -158,7 +144,7 @@ def get_user(id):
     response = json_util.dumps(user)
     return Response (response, mimetype="application/json")
 
-#DELETAR USUARIOS
+
 @app.route('/users/<id>', methods=['DELETE'])
 def detele_user(id):
     mongo.db.users.delete_one({'_id': ObjectId(id)})
@@ -369,9 +355,16 @@ def update_eixo(id):
 
 ###################################################################################
 
+
+@app.route ("/formCadAtividade", methods=['GET', 'POST'])
+def cadastra_atividade_form():
+    response = atividades.create_atividade_form()
+    return response
+
 @app.route('/atividades', methods=['POST'])
-def cadastra_atividade ():
+def cadastra_atividade():
     atividades.create_atividade()
+
 
 @app.route('/atividades', methods=['GET'])
 def lista_atividades():
@@ -383,27 +376,17 @@ def lista_atividade_id(id):
     response = atividades.get_atividade(id)
     return response
 
-#DELETAR ATIVIDADES
-@app.route('/atividades/<id>', methods=['DELETE'])
-def detele_atividade(id):
-    mongo.db.atividades.delete_one({'_id': ObjectId(id)})
-    response = jsonify({'mensagem': 'Atividade: ' + id + 'foi deletada com sucesso!'})
+
+@app.route('/excluiatividade/<id>', methods=['DELETE'])
+def excluir_atividade(id):
+    response = atividades.detele_atividade(id)
     return response
 
-#ATUALIZAR ATIVIDADES
-@app.route('/atividades/<id>', methods=['PUT'])
-def update_atividade(id):
-    atividade = request.json['atividade']
-    descricao = request.json['descricao']
 
-    if atividade and descricao:
-        mongo.db.atividades.update_one({'_id': ObjectId(id)}, {'$set': {
-            'atividade': atividade,
-            'descricao': descricao
-
-        }})
-        response = jsonify({'mensagem': 'Atividade: ' + id + 'foi atualizada com sucesso!'})
-        return response
+@app.route('/atualizaatividade/<id>', methods=['PUT'])
+def atualiza_atividade(id):
+    response = atividades.update_atividade(id)
+    return response
 
 
 if __name__ == "__main__":
